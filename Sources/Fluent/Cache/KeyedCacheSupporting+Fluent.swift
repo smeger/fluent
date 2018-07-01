@@ -1,6 +1,16 @@
 /// Provides free `KeyedCacheSupporting` to `Database`s that conform to `QuerySupporting`.
 extension KeyedCacheSupporting where Self: QuerySupporting {
     /// See `KeyedCacheSupporting`.
+    public static func keyedCacheCreate<E>(_ key: String, to encodable: E, on conn: Self.Connection) throws -> Future<Void>
+        where E: Encodable
+    {
+        let data = try JSONEncoder().encode(Encode<E>(data: encodable))
+        return CacheEntry<Self>(key: key, data: data)
+            .create(on: conn)
+            .transform(to: ())
+    }
+
+    /// See `KeyedCacheSupporting`.
     public static func keyedCacheGet<D>(_ key: String, as decodable: D.Type, on conn: Self.Connection) -> Future<D?>
         where D: Decodable
     {
@@ -19,7 +29,7 @@ extension KeyedCacheSupporting where Self: QuerySupporting {
     {
         let data = try JSONEncoder().encode(Encode<E>(data: encodable))
         return CacheEntry<Self>(key: key, data: data)
-            .create(on: conn)
+            .save(on: conn)
             .transform(to: ())
     }
 
